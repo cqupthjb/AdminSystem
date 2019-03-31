@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>添加角色</title>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/plugins/layui/css/layui.css">
+	<script type="text/javascript" src="__STATIC__/plugins/layui/layui.js"></script>
+	<style type="text/css">
+		.header span{background: #009688;margin-left: 30px;padding: 10px;color: #ffffff;}
+		.header div{border-bottom: solid 2px #009688;margin-top: 8px;}
+	</style>
+</head>
+<body style="padding: 10px;">
+	<form class="layui-form">
+		<input type="hidden" name="gid" value="{$role.gid}">
+		<div class="layui-form-item">
+			<label class="layui-form-label">角色名称</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input" name="title" value="{$role.title}">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">权限菜单</label>
+			{volist name="menus" id="vo"}
+			<div class="layui-input-block">
+				<input type="checkbox" name="menu[{$vo.mid}]" lay-skin="primary" title="{$vo.title}" {:isset($role['rights']) && $role['rights'] && in_array($vo.mid, $role['rights']) ? 'checked' : ''}>
+				<br>
+				{volist name="vo.children" id="cvo"}
+				<input type="checkbox" name="menu[{$cvo.mid}]" lay-skin="primary" title="{$cvo.title}" {:isset($role['rights']) && $role['rights'] && in_array($cvo.mid, $role['rights']) ? 'checked' : ''}>
+				{/volist}
+				<hr>
+			</div>
+			{/volist}
+		</div>
+	</form>
+	<div class="layui-form-item">
+		<div class="layui-input-block">
+			<button class="layui-btn" onclick="save()">保存</button>
+		</div>
+	</div>
+</body>
+</html>
+<script type="text/javascript">
+	layui.use(['layer', 'form'],function(){
+		var form = layui.form;
+		layer = layui.layer;
+		$ = layui.jquery;
+	});
+
+	function save(){
+		var title = $.trim($('input[name="title"]').val());
+		if(title == ''){
+			layer.msg('请填写角色名称',{'icon':2});
+			return;
+		}
+		$.post('/admins.php/admins/roles/save', $('form').serialize(),function(res){
+			if(res.code > 0){
+				layer.msg(res.msg,{'icon':2});
+			}else{
+				layer.msg(res.msg,{'icon':1});
+				setTimeout(function(){parent.window.location.reload();},1000);
+			}	
+		},'json');
+	}
+</script>
